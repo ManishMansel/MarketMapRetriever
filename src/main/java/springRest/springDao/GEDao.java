@@ -11,7 +11,8 @@ public interface GEDao {
 
     HashMap<Integer, HashMap<Integer, List<TechSubSegment>>> fetchAllTechSubSegment();
 
-    void addToTechSubSegmentMap(Integer horizontalId, Integer technologyId,String name) throws Exception;
+    Long addToTechSubSegmentMap(Integer horizontalId, Integer technologyId, String name) throws Exception;
 
-    void deleteFromTechSubSegmentMap(Integer id) throws Exception;
+    String deleteFromTechSubSegmentMap(Integer id) throws Exception;
+    String updateTechSubSegmentMap(Integer id,String name) throws Exception;
 }

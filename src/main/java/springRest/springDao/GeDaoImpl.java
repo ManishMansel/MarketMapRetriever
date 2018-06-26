@@ -3,12 +3,15 @@ package springRest.springDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import springRest.springDto.TechSubSegment;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,16 +62,18 @@ public class GeDaoImpl implements GEDao {
     }
 
     @Override
-    public void addToTechSubSegmentMap(Integer horizontalId, Integer technologyId, String name) throws Exception {
+    public Long addToTechSubSegmentMap(Integer horizontalId, Integer technologyId, String name) throws Exception {
 
         try {
             String query = "Insert into mtb_technology_sub_segment(segment_name,parent_id,technology_id) values(:name,:tId,:hId)";
-            Map namedParameters = new HashMap();
-            namedParameters.put("name", name);
-            namedParameters.put("tId", technologyId);
-            namedParameters.put("hId", horizontalId);
-            jdbcTemplate.update(query, namedParameters);
+            MapSqlParameterSource parameters = new MapSqlParameterSource()
+                    .addValue("name", name)
+                    .addValue("tId", technologyId)
+                    .addValue("hId", horizontalId);
+            KeyHolder holder = new GeneratedKeyHolder();
 
+            jdbcTemplate.update(query, parameters, holder, new String[]{"ID"});
+            return holder.getKey().longValue();
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("Exception occured for insert");
@@ -77,17 +82,41 @@ public class GeDaoImpl implements GEDao {
     }
 
     @Override
-    public void deleteFromTechSubSegmentMap(Integer id) throws Exception {
-        try {
-            String query = "delete from mtb_technology_sub_segment where id = :id";
+    public String deleteFromTechSubSegmentMap(Integer id) throws Exception {
+        try{
+
             Map namedParameters = new HashMap();
             namedParameters.put("id", id);
-            jdbcTemplate.update(query, namedParameters);
-
-        } catch (Exception e) {
-            throw new Exception("Exception occured for insert");
+            String deleteQuery = "delete from mtb_technology_sub_segment where id = :id";
+            jdbcTemplate.update(deleteQuery, namedParameters);
+            return "Success";
         }
-    }
+        catch (Exception e){
+            throw new Exception("Exception occurred for delete");
+        }
 
+    }
+    @Override
+    public String updateTechSubSegmentMap(Integer id,String name) throws Exception {
+        try{
+            String query = "select count(*) from mtb_technology_sub_segment where id = :id";
+            Map namedParameters = new HashMap();
+            namedParameters.put("id", id);
+            Integer count = jdbcTemplate.queryForObject(query, namedParameters, Integer.class);
+            if(count==0){
+                return "No such record Found";
+            }
+            else{
+                namedParameters.put("name", name);
+                String deleteQuery = "update mtb_technology_sub_segment set segment_name = :name where id = :id";
+                jdbcTemplate.update(deleteQuery, namedParameters);
+                return "Success";
+            }
+        }
+        catch (Exception e){
+            throw new Exception("Exception occurred for Update");
+        }
+
+    }
 
 }

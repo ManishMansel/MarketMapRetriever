@@ -45,15 +45,27 @@ public class HelloController {
         return marketMapTreeList;
     }
     @RequestMapping(value = "/addToMarketMap", method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
-    List<MarketMapTree> addToMarketMap(@RequestParam Integer horizontalId,@RequestParam Integer technologyId,@RequestParam String name) throws Exception {
-        geDao.addToTechSubSegmentMap(horizontalId,technologyId,name);
-        return fetchMarketMap();
+    HashMap<String, Object> addToMarketMap(@RequestParam Integer horizontalId,@RequestParam Integer technologyId,@RequestParam String name) throws Exception {
+       Long genId = geDao.addToTechSubSegmentMap(horizontalId,technologyId,name);
+       HashMap<String,Object> resultMap = new HashMap<>();
+        resultMap.put("item",name);
+        resultMap.put("horizontalId",horizontalId);
+        resultMap.put("technologyId",technologyId);
+        resultMap.put("id",genId);
+        resultMap.put("children",new ArrayList<MarketMapTree>());
+        return resultMap;
 
     }
     @RequestMapping(value = "/deleteFromMarketMap", method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
-    List<MarketMapTree> deleteFromMarketMap(@RequestParam Integer id) throws Exception {
-        geDao.deleteFromTechSubSegmentMap(id);
-        return fetchMarketMap();
+    String deleteFromMarketMap(@RequestParam Integer id) throws Exception {
+       String status =  geDao.deleteFromTechSubSegmentMap(id);
+        return status;
+
+    }
+    @RequestMapping(value = "/updateMarketMap", method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
+    String updateMarketMap(@RequestParam Integer id,@RequestParam String name) throws Exception {
+       String status =  geDao.updateTechSubSegmentMap(id,name);
+        return status;
 
     }
     private void populateTechMap(HashMap<Integer, HashMap<Integer, List<TechSubSegment>>> techMap, List<MarketMapTree> marketMapTreeList) {
